@@ -8,7 +8,9 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.github.shiro.chapter.entity.Client;
 import com.github.shiro.chapter.entity.User;
+import com.github.shiro.chapter.service.ClientService;
 import com.github.shiro.chapter.service.UserService;
 
 /**
@@ -23,6 +25,8 @@ public class UserRealm extends AuthorizingRealm {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private ClientService clientService;
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -32,7 +36,27 @@ public class UserRealm extends AuthorizingRealm {
         //暂时不加权限
         return authorizationInfo;
     }
+    
+    @Override
+    protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 
+        String client_id = (String)token.getPrincipal();
+        Client client = clientService.findByClientId(client_id);
+
+        if(client == null) {
+            throw new UnknownAccountException();//没找到帐号
+        }
+
+        //交给AuthenticatingRealm使用CredentialsMatcher进行密码匹配，如果觉得人家的不好可以自定义实现
+        SimpleAuthenticationInfo authenticationInfo = new SimpleAuthenticationInfo(
+        		client.getClientId(), //用户名
+        		client.getClientSecret(), //密码
+                ByteSource.Util.bytes(client.getClientSecret()),//salt=username+salt
+                getName()  //realm name
+        );
+        return authenticationInfo;
+    }
+/*
     @Override
     protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 
@@ -53,7 +77,7 @@ public class UserRealm extends AuthorizingRealm {
         );
         return authenticationInfo;
     }
-
+*/
     @Override
     public void clearCachedAuthorizationInfo(PrincipalCollection principals) {
         super.clearCachedAuthorizationInfo(principals);

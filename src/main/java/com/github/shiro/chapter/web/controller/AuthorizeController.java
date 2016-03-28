@@ -120,11 +120,16 @@ public class AuthorizeController {
 	}
 
 	private boolean login(Subject subject, HttpServletRequest request) {
+		/*
 		if ("get".equalsIgnoreCase(request.getMethod())) {
 			return false;
 		}
-		String username = request.getParameter("username");
-		String password = request.getParameter("password");
+		*/
+//		String username = request.getParameter("username");
+//		String password = request.getParameter("password");
+		
+		String username = request.getParameter("client_id");
+		String password = request.getParameter("client_key");
 
 		if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
 			return false;
